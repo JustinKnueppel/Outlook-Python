@@ -4,6 +4,7 @@ import win32com.client
 from typing import List
 
 from .email import Email
+from .util import search
 
 class Folder:
     def __init__(self, win32_folder: win32com.client.CDispatch):
@@ -17,9 +18,19 @@ class Folder:
 
     def emails(self, recursive: bool=True) -> List[Email]:
         """Return collection of emails in the given folder"""
-        #TODO Limit this to only MailItems
-        return [Email(email) for email in self._folder.Items]
+        return [Email(email) for email in self._folder.Items if email.MessageClass == 'IPM.Note']
 
-    def folders(self) -> List[win32com.client.CDispatch]:
+    def folders(self) -> List['Folder']:
         """Return collection of subfolders in the given folder"""
-        return list(self._folder.Folders)
+        return [Folder(folder) for folder in self._folder.Folders]
+
+    def search(self, recursive=False, **kwargs) -> List[Email]:
+        """Return collection of emails matching the given search critera"""
+        emails = self.emails()
+        matches = search(emails, **kwargs)
+
+        if recursive:
+            for subfolder in self.folders():
+                matches.extend(subfolder.search(recursive=True, **kwargs))
+        
+        return matches
