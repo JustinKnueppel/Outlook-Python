@@ -4,20 +4,22 @@ from datetime import datetime
 
 from typing import List
 
+from .attachment import Attachment
+
 class Email:
     def __init__(self, win32_email: win32com.client.CDispatch):
         self._email = win32_email
 
     def __repr__(self):
-        return __email_to_string(self)
+        return f'{self.sender_name()}: {self.subject()}'
 
     def __str__(self):
-        return __email_to_string(self)
+        return f'{self.sender_name()}: {self.subject()}'
 
     def attachments(self) -> List[win32com.client.CDispatch]:
         """Return a list of attachments"""
         num_attachments = self._email.Attachments.Count
-        return [self._email.Attachments.Item(i) for i in range(num_attachments)]
+        return [Attachment(self._email.Attachments.Item(i)) for i in range(1, num_attachments + 1)]
 
     def body(self) -> str:
         """Returns the body of the email"""
@@ -38,7 +40,3 @@ class Email:
     def subject(self) -> str:
         """Returns the subject line of the email"""
         return str(self._email.Subject)
-
-def __email_to_string(email: Email) -> str:
-    """Return string representation of an email object"""
-    return f'{email.sender_name}: {email.subject}'
