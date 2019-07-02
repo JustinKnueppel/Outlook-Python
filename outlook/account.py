@@ -3,6 +3,8 @@ import win32com.client
 
 from typing import List
 
+from .folder import Folder
+
 class Account:
     def __init__(self, account_name: str):
         assert any([account_name in account_display_name for account_display_name in Account.list_accounts()]), "Given account not found"
@@ -16,14 +18,14 @@ class Account:
         account = next(filter(lambda account: account_name in account.DisplayName, win32com.client.Dispatch("Outlook.Application").Session.Accounts))
         return account
 
-    def folders(self) -> List[str]:
+    def folders(self) -> List[Folder]:
         """Return collection of folder names"""
-        return [str(folder) for folder in self.outlook.Folders(self.account.DeliveryStore.DisplayName).Folders]
+        return [Folder(folder) for folder in self.outlook.Folders(self.account.DeliveryStore.DisplayName).Folders]
 
     def get_folder(self, folder_name: str) -> win32com.client.CDispatch:
         """Return a folder based on its name"""
         folder = next(filter(lambda folder: folder_name.lower() in str(folder).lower(), self.outlook.Folders(self.account.DeliveryStore.DisplayName).Folders))
-        return folder
+        return Folder(folder)
 
     @staticmethod
     def list_accounts() -> List[str]:
