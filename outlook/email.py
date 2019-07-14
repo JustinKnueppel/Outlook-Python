@@ -11,6 +11,15 @@ class Email:
     def __init__(self, win32_email: win32com.client.CDispatch):
         self._email = win32_email
 
+    @classmethod
+    def new_email(cls, outlook: win32com.client.CDispatch, to: str, subject: str, body: str) -> 'Email':
+        """Create an email object from scratch"""
+        email = outlook.CreateItem(0)
+        email.To = to
+        email.Subject = subject
+        email.Body = body
+        return cls(email)
+
     def __repr__(self):
         return f'{self.sender_name()}: {self.subject()}'
 
@@ -38,6 +47,11 @@ class Email:
         )
         match = time_regex.match(pywintime)
         return datetime(*map(int, match.groups()))
+
+    def send(self) -> bool:
+        """Send the given email"""
+        #TODO: Add asserts to have a receiving address and content
+        self._email.Send()
 
     def sender_email(self) -> str:
         """Returns the email address of the sender"""
