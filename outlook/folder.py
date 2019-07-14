@@ -48,9 +48,13 @@ class Folder:
 
         return list(compress(emails, matches))
 
-    def emails(self, recursive: bool=True) -> List[Email]:
+    def emails(self, recursive: bool=False) -> List[Email]:
         """Return collection of emails in the given folder"""
-        return [Email(email) for email in self._folder.Items if email.MessageClass == 'IPM.Note']
+        emails = [Email(email) for email in self._folder.Items if email.MessageClass == 'IPM.Note']
+        if recursive:
+            for folder in self.folders():
+                emails.extend(folder.emails(recursive=True))
+        return emails
 
     def folders(self) -> List['Folder']:
         """Return collection of subfolders in the given folder"""
