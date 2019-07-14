@@ -1,6 +1,7 @@
 import win32com
 import win32com.client
 from datetime import datetime
+import re
 
 from typing import List
 
@@ -27,7 +28,16 @@ class Email:
 
     def received_time(self) -> datetime:
         """Returns the time the email was received"""
-        return self._email.RecievedTime
+        pywintime = str(self._email.ReceivedTime)
+        time_regex = re.compile(r'(\d{4})-' # Year
+                                r'(\d{2})-' # Month
+                                r'(\d{2}) ' # Day
+                                r'(\d{2}):' # Hours
+                                r'(\d{2}):' # Minutes
+                                r'(\d{2}).*'# Seconds
+        )
+        match = time_regex.match(pywintime)
+        return datetime(*map(int, match.groups()))
 
     def sender_email(self) -> str:
         """Returns the email address of the sender"""
